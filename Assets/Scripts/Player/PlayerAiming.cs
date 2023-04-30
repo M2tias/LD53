@@ -32,7 +32,6 @@ public class PlayerAiming : MonoBehaviour
         Vector2 direction = m - new Vector2(pos.x, pos.y);
         float angle = Vector2.SignedAngle(Vector2.right, direction);
         ShootAngle = angle;
-        Debug.Log(angle);
 
         foreach (var aimingSprite in upperTorsoSprites)
         {

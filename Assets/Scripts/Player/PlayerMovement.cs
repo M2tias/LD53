@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
@@ -18,13 +19,18 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField]
     private Animator moveLowerAnim;
 
+    private float jumpSpeed = 5f;
+
     private float currentMovementSpeed = 0;
 
     private Rigidbody2D body2D;
     private PlayerAiming aiming;
     private bool setYPos = false;
     private float collisionYPos = 0f;
-    private bool jumped = false;
+    private bool setXPos = false;
+    private float collisionXPos = 0f;
+    private int jumped = 0;
+    private int maxJumps = 2;
     private bool moving = false;
 
     // Start is called before the first frame update
@@ -42,18 +48,29 @@ public class PlayerMovement : MonoBehaviour
             transform.position = new Vector3(transform.position.x, collisionYPos, transform.position.z);
             setYPos = false;
         }
-        // movement
-        // - horizontal arrows (axis?) high acceleration, high dampening
-        // - vertical
-        //   - constant down accel
-        //   - jump = vertical speed boost
+        if (setXPos)
+        {
+            transform.position = new Vector3(collisionXPos, transform.position.y, transform.position.z);
+            setXPos = false;
+        }
 
-        if (Input.GetKey(KeyCode.LeftArrow))
+        controlsAndMovement();
+
+        body2D.velocity = body2D.velocity - new Vector2(0, 10f * Time.deltaTime);
+
+        collisions();
+
+        animateWalk();
+    }
+
+    private void controlsAndMovement()
+    {
+        if (Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.A))
         {
             currentMovementSpeed = Mathf.Max(currentMovementSpeed - movementAcceleration * Time.deltaTime, -maxMovementSpeed);
             moving = true;
         }
-        else if (Input.GetKey(KeyCode.RightArrow))
+        else if (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.D))
         {
             currentMovementSpeed = Mathf.Min(currentMovementSpeed + movementAcceleration * Time.deltaTime, maxMovementSpeed);
             moving = true;
@@ -71,44 +88,91 @@ public class PlayerMovement : MonoBehaviour
 
         body2D.velocity = new Vector2(currentMovementSpeed, body2D.velocity.y);
 
-        if (Input.GetKeyDown(KeyCode.UpArrow) && !jumped)
+        if ((Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W)) && jumped < maxJumps)
         {
-            body2D.velocity = new Vector2(body2D.velocity.x, 5f);
-            jumped = true;
+            body2D.velocity = new Vector2(body2D.velocity.x, jumpSpeed);
+            jumped++;
         }
+    }
 
-        body2D.velocity = body2D.velocity - new Vector2(0, 10f * Time.deltaTime);
-
-        int mask = ~LayerMask.NameToLayer("Ground");
+    private void collisions()
+    {
+        int mask = LayerMask.GetMask("Ground");
         RaycastHit2D hitFeet = Physics2D.Raycast(transform.position, Vector2.down, 0.5f, mask);
-        
-        float ySpeed = -Mathf.Min(body2D.velocity.y, 0f) * Time.deltaTime + 0.05f;
-        RaycastHit2D hitLower = Physics2D.Raycast(transform.position, Vector2.down, 0.5f + ySpeed, mask);
-
-        // Debug.Log($"Feet: {hitFeet.point}, Lower: {hitLower.point}");
+        RaycastHit2D hitLeftUpper = Physics2D.Raycast(transform.position + Vector3.up * 0.45f, Vector2.left, 0.15f, mask);
+        RaycastHit2D hitLeftLower = Physics2D.Raycast(transform.position - Vector3.up * 0.4f, Vector2.left, 0.15f, mask);
+        RaycastHit2D hitRightUpper = Physics2D.Raycast(transform.position + Vector3.up * 0.45f, Vector2.right, 0.15f, mask);
+        RaycastHit2D hitRightLower = Physics2D.Raycast(transform.position - Vector3.up * 0.4f, Vector2.right, 0.15f, mask);
+        RaycastHit2D hitTopLeft = Physics2D.Raycast(transform.position + Vector3.left * 0.1f, Vector2.up, 0.47f, mask);
+        RaycastHit2D hitTopRight = Physics2D.Raycast(transform.position + Vector3.right * 0.1f, Vector2.up, 0.47f, mask);
 
         if (hitFeet.collider != null && body2D.velocity.y < 0)
         {
             body2D.velocity = new Vector2(body2D.velocity.x, 0);
-            collisionYPos = hitLower.point.y + 0.5f;
+            collisionYPos = hitFeet.point.y + 0.5f;
             setYPos = true;
-            jumped = false;
+            jumped = 0;
         }
-        else if (hitLower.collider != null && body2D.velocity.y < 0)
+
+        bool sideHit = false;
+
+        bool leftCollided = hitLeftUpper.collider != null || hitLeftLower.collider != null;
+        if (leftCollided && body2D.velocity.x < 0)
         {
-
-            // Debug.Log($"Hit collider while falling. setting y pos to {hitLower.point.y}");
-            body2D.velocity = new Vector2(body2D.velocity.x, 0);
-            collisionYPos = hitLower.point.y + 0.5f;
-            setYPos = true;
-            jumped = false;
+            body2D.velocity = new Vector2(0, body2D.velocity.y);
+            if (hitLeftLower.collider != null)
+            {
+                collisionXPos = hitLeftLower.point.x + 0.15f;
+            }
+            else if (hitLeftUpper.collider != null)
+            {
+                collisionXPos = hitLeftUpper.point.x + 0.15f;
+            }
+            setXPos = true;
+            // Debug.Log("left collided");
+            sideHit = true;
         }
 
+        bool rightCollided = hitRightUpper.collider != null || hitRightLower.collider != null;
+        if (rightCollided && body2D.velocity.x > 0)
+        {
+            body2D.velocity = new Vector2(0, body2D.velocity.y);
+            if (hitRightLower.collider != null)
+            {
+                collisionXPos = hitRightLower.point.x - 0.15f;
+            }
+            else if (hitRightUpper.collider != null)
+            {
+                collisionXPos = hitRightUpper.point.x - 0.15f;
+            }
+            setXPos = true;
+            // Debug.Log("right collided");
+            sideHit = true;
+        }
+
+        bool topCollided = (hitTopLeft.collider != null || hitTopRight.collider != null) && !sideHit;
+        if (topCollided && body2D.velocity.y > 0)
+        {
+            body2D.velocity = new Vector2(body2D.velocity.x, 0);
+            if (hitTopLeft.collider != null)
+            {
+                collisionYPos = hitTopLeft.point.y - 0.47f;
+            }
+            else
+            {
+                collisionYPos = hitTopRight.point.y - 0.47f;
+            }
+            setYPos = true;
+            // Debug.Log("top collided");
+        }
+    }
+
+    private void animateWalk()
+    {
         bool walkingBackwards = aiming.IsFlipped == body2D.velocity.x >= 0;
 
         if (moving)
         {
-            Debug.Log("Playing");
             moveUpperAnim.SetBool("walking", true);
             moveLowerAnim.SetBool("walking", true);
             moveUpperAnim.SetFloat("speedMult", walkingBackwards ? -1f : 1f);
@@ -116,7 +180,6 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            Debug.Log("Not playing");
             moveUpperAnim.SetBool("walking", false);
             moveLowerAnim.SetBool("walking", false);
             moveUpperAnim.SetFloat("speedMult", walkingBackwards ? -1f : 1f);
