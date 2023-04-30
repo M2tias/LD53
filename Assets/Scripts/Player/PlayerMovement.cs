@@ -99,10 +99,10 @@ public class PlayerMovement : MonoBehaviour
     {
         int mask = LayerMask.GetMask("Ground");
         RaycastHit2D hitFeet = Physics2D.Raycast(transform.position, Vector2.down, 0.5f, mask);
-        RaycastHit2D hitLeftUpper = Physics2D.Raycast(transform.position + Vector3.up * 0.45f, Vector2.left, 0.15f, mask);
-        RaycastHit2D hitLeftLower = Physics2D.Raycast(transform.position - Vector3.up * 0.4f, Vector2.left, 0.15f, mask);
-        RaycastHit2D hitRightUpper = Physics2D.Raycast(transform.position + Vector3.up * 0.45f, Vector2.right, 0.15f, mask);
-        RaycastHit2D hitRightLower = Physics2D.Raycast(transform.position - Vector3.up * 0.4f, Vector2.right, 0.15f, mask);
+        RaycastHit2D hitLeftUpper = Physics2D.Raycast(transform.position + Vector3.up * 0.35f, Vector2.left, 0.15f, mask);
+        RaycastHit2D hitLeftLower = Physics2D.Raycast(transform.position - Vector3.up * 0.35f, Vector2.left, 0.15f, mask);
+        RaycastHit2D hitRightUpper = Physics2D.Raycast(transform.position + Vector3.up * 0.35f, Vector2.right, 0.15f, mask);
+        RaycastHit2D hitRightLower = Physics2D.Raycast(transform.position - Vector3.up * 0.35f, Vector2.right, 0.15f, mask);
         RaycastHit2D hitTopLeft = Physics2D.Raycast(transform.position + Vector3.left * 0.1f, Vector2.up, 0.47f, mask);
         RaycastHit2D hitTopRight = Physics2D.Raycast(transform.position + Vector3.right * 0.1f, Vector2.up, 0.47f, mask);
 

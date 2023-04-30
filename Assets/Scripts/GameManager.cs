@@ -5,6 +5,9 @@ using UnityEngine;
 
 public class GameManager : MonoBehaviour
 {
+    [SerializeField]
+    private GameObject player;
+
     private List<Mailbox> mailboxes = new List<Mailbox>();
 
     private int letters;
@@ -52,5 +55,10 @@ public class GameManager : MonoBehaviour
         {
             Debug.Log("You died!");
         }
+    }
+
+    public GameObject GetPlayer()
+    {
+        return player;
     }
 }
