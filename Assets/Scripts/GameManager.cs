@@ -51,6 +51,9 @@ public class GameManager : MonoBehaviour
         }
         Debug.Log(mailboxes.Count);
         letters = mailboxes.Count;
+
+        Cursor.lockState = CursorLockMode.Confined;
+        Cursor.visible = false;
     }
 
     void Update()
