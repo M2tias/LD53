@@ -27,6 +27,8 @@ public class PlayerAiming : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (GameManager.main.GameOver) return;
+
         Vector2 m = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         Vector3 pos = transform.position;
         Vector2 direction = m - new Vector2(pos.x, pos.y);

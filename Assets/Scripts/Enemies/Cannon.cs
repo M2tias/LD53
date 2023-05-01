@@ -15,21 +15,27 @@ public class Cannon : MonoBehaviour
     private float rotateSpeed;
     [SerializeField]
     private float timeBeforeShoot;
+    [SerializeField]
+    private float shootCD;
 
+    private AudioSource shootSFX;
     private LineRenderer lineRenderer;
     private float targetAcquiredTime = 0f;
     private bool targetAcquired = false;
+    private float lastShot = 0f;
 
     // Start is called before the first frame update
     void Start()
     {
         lineRenderer = GetComponent<LineRenderer>();
         lineRenderer.enabled = false;
+        shootSFX = GetComponent<AudioSource>();
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (GameManager.main.GameOver) return;
         GameObject player = GameManager.main.GetPlayer();
 
         if (Vector3.Distance(transform.position, player.transform.position) <= shootDistance)
@@ -60,9 +66,12 @@ public class Cannon : MonoBehaviour
             Vector2 rayOrigin = new Vector2(pipe.position.x, pipe.position.y);
             int shootMask = LayerMask.GetMask(new[] { "Ground", "Player" });
 
-            RaycastHit2D hitInfo = Physics2D.Raycast(rayOrigin, pipe.localRotation * Vector2.up, shootDistance, shootMask);
+            RaycastHit2D hitInfo = Physics2D.Raycast(rayOrigin, -pipe.right, shootDistance, shootMask);
 
-            if (hitInfo.collider != null && !clamped)
+            // Debug.DrawRay(rayOrigin, -pipe.right);
+            bool offCD = Time.time - lastShot > shootCD;
+
+            if (hitInfo.collider != null && !clamped && offCD)
             {
                 // Debug.Log(hitInfo.collider.tag);
                 if (hitInfo.collider.tag == "Player")
@@ -80,6 +89,11 @@ public class Cannon : MonoBehaviour
                     }
                     targetAcquired = true;
                 }
+                else
+                {
+                    targetAcquired = false;
+                    targetAcquiredTime = 0;
+                }
             }
             else
             {
@@ -95,14 +109,21 @@ public class Cannon : MonoBehaviour
             if (targetAcquired && Time.time - targetAcquiredTime > timeBeforeShoot)
             {
                 targetAcquiredTime = 0f;
-                Debug.Log("SHOOTED");
+                // Debug.Log("SHOOTED");
                 GameManager.main.TakeDamage();
                 targetAcquired = false;
+                shootSFX.PlayOneShot(shootSFX.clip);
 
                 GameObject smoke = Instantiate(gunSmokePrefab);
                 smoke.transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
-                smoke.transform.position = pipe.transform.position + pipe.localRotation * Vector2.up * 0.5f;
+                smoke.transform.position = -pipe.right * 0.5f + pipe.transform.position;// + pipe.localRotation * Vector2.up * 0.5f;
+                lastShot = Time.time;
             }
+        }
+        else
+        {
+            targetAcquired = false;
+            targetAcquiredTime = 0;
         }
     }
 }

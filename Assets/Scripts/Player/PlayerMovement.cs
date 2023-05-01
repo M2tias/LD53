@@ -43,6 +43,8 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (GameManager.main.GameOver) return;
+
         if (setYPos)
         {
             transform.position = new Vector3(transform.position.x, collisionYPos, transform.position.z);

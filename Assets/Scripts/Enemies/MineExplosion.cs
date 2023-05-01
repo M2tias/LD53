@@ -4,10 +4,13 @@ using UnityEngine;
 
 public class MineExplosion : MonoBehaviour
 {
+    [SerializeField]
+    private AudioSource explosionSFX;
+
     // Start is called before the first frame update
     void Start()
     {
-        
+        explosionSFX.PlayOneShot(explosionSFX.clip);
     }
 
     // Update is called once per frame

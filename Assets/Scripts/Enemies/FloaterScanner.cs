@@ -19,6 +19,7 @@ public class FloaterScanner : MonoBehaviour
     [SerializeField]
     private FloaterShooter shooter;
 
+    private AudioSource zapSFX;
     private LineRenderer lineRenderer;
     private float currentRadius = 0f;
     private float lastScan = 0f;
@@ -29,6 +30,7 @@ public class FloaterScanner : MonoBehaviour
     void Start()
     {
         lineRenderer = GetComponent<LineRenderer>();
+        zapSFX = GetComponent<AudioSource>();
 
         UpdateCircle(1f);
     }
@@ -52,6 +54,7 @@ public class FloaterScanner : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (GameManager.main.GameOver) return;
 
         Vector3 vec = GameManager.main.GetPlayer().transform.position - shooter.transform.position;
         float distanceToTarget = vec.magnitude;
@@ -75,7 +78,6 @@ public class FloaterScanner : MonoBehaviour
 
         if (currentRadius >= maxScanRange)
         {
-            Debug.Log(scanT);
             currentRadius = 0;
             lineRenderer.enabled = false;
             startScan = false;
@@ -85,6 +87,7 @@ public class FloaterScanner : MonoBehaviour
             if (distanceToTarget <= maxScanRange)
             {
                 shooter.Shoot();
+                zapSFX.PlayOneShot(zapSFX.clip);
             }
         }
     }

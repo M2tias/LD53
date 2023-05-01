@@ -9,7 +9,9 @@ public class PlayerShooting : MonoBehaviour
     [SerializeField]
     private GameObject shotHitPrefab;
     [SerializeField]
-    private Transform gunPoint;
+    private AudioSource shotSound;
+    // [SerializeField]
+    // private Transform gunPoint;
 
     private PlayerAiming aiming;
 
@@ -25,9 +27,19 @@ public class PlayerShooting : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (GameManager.main.GameOver) return;
+
+        Transform gunPoint = aiming.CurrentGunpoint;
+        // Vector2 rayOrigin2 = new Vector2(gunPoint.position.x, gunPoint.position.y);
+        // 
+        // float angleRadians2 = aiming.ShootAngle * Mathf.Deg2Rad;
+        // Vector2 rayDir2 = new Vector2(Mathf.Cos(angleRadians2), Mathf.Sin(angleRadians2));
+        // Debug.DrawRay(rayOrigin2, rayDir2);
+
         bool shootOffCD = Time.time - lastShot > shootCD;
         if(Input.GetKeyDown(KeyCode.Mouse0) && shootOffCD)
         {
+            shotSound.PlayOneShot(shotSound.clip);
             lastShot = Time.time;
             GameObject smoke = Instantiate(gunSmokePrefab);
             smoke.transform.rotation = Quaternion.AngleAxis(aiming.ShootAngle, Vector3.forward);
@@ -40,6 +52,8 @@ public class PlayerShooting : MonoBehaviour
             int shootMask = LayerMask.GetMask(new[] { "Ground", "Enemy" });
 
             RaycastHit2D hitInfo = Physics2D.Raycast(rayOrigin, rayDir, 10f, shootMask);
+
+            // Debug.DrawRay(rayOrigin, rayDir);
 
             if (hitInfo.collider != null)
             {

@@ -8,12 +8,32 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private GameObject player;
 
+    [SerializeField]
+    private AudioSource deliverySfx;
+
+    [SerializeField]
+    private List<GameObject> hearts;
+
+    [SerializeField]
+    private List<GameObject> letterNumbers;
+
+    [SerializeField]
+    private GameObject DialogBG;
+
+    [SerializeField]
+    private GameObject VictoryText;
+
+    [SerializeField]
+    private GameObject GameOverText;
+
     private List<Mailbox> mailboxes = new List<Mailbox>();
 
     private int letters;
     private int playerHP = 10;
 
     public static GameManager main;
+
+    public bool GameOver = false;
 
     private void Awake()
     {
@@ -35,15 +55,37 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
+        for (int i = 0; i < 10; i++)
+        {
+            hearts[i].SetActive(true);
 
+            if (i >= playerHP)
+            {
+                hearts[i].SetActive(false);
+            }
+        }
+
+        for (int i = 0; i < 6; i++)
+        {
+            letterNumbers[i].SetActive(false);
+
+            if (i == letters)
+            {
+                letterNumbers[i].SetActive(true);
+            }
+        }
     }
 
     public void Deliver()
     {
+        deliverySfx.PlayOneShot(deliverySfx.clip);
         letters--;
         if (letters <= 0)
         {
             Debug.Log("You win!");
+            DialogBG.SetActive(true);
+            VictoryText.SetActive(true);
+            GameOver = true;
         }
     }
 
@@ -54,6 +96,9 @@ public class GameManager : MonoBehaviour
         if (playerHP <= 0)
         {
             Debug.Log("You died!");
+            DialogBG.SetActive(true);
+            GameOverText.SetActive(true);
+            GameOver = true;
         }
     }
 

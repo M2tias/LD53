@@ -35,6 +35,7 @@ public class WaypointMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (GameManager.main.GameOver) return;
         Vector3 vec = currentWayPoint.transform.position - transform.position;
         float distanceToTarget = vec.magnitude;
         Vector2 moveDir = (vec).normalized;

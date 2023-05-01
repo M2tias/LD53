@@ -20,6 +20,8 @@ public class GunFlash : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (GameManager.main.GameOver) return;
+
         if (currentSpriteIndex < sprites.Count)
         {
             spriteRenderer.sprite = sprites[Mathf.Min(currentSpriteIndex, sprites.Count - 1)];
